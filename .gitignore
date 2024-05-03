@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/dbar
+dbar.so
+dbar.dylib
+dbar.dll
+dbar.a
+dbar.lib
+dbar-test-*
+*.exe
+*.o
+*.obj
+*.lst

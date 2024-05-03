@@ -1,0 +1,8 @@
+name "dbar"
+description "wayland widgets"
+authors "Alex Savchenko"
+copyright "Copyright © 2024, Alex Savchenko"
+license "LGPL"
+dependency "gtk-d" version="~>3.10.0"
+
+lflags "/home/user/code/dbar/3rdparty/gtk-layer-shell/build/src/libgtk-layer-shell.so"
