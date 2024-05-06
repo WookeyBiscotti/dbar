@@ -4,5 +4,7 @@ authors "Alex Savchenko"
 copyright "Copyright © 2024, Alex Savchenko"
 license "LGPL"
 dependency "gtk-d" version="~>3.10.0"
+dependency "dyaml" version="~>0.9.2"
 
-lflags "/home/user/code/dbar/3rdparty/gtk-layer-shell/build/src/libgtk-layer-shell.so"
+// lflags "$PACKAGE_DIR/3rdparty/gtk-layer-shell/build/src/libgtk-layer-shell.so.0"
+lflags "/usr/lib/libgtk-layer-shell.so"

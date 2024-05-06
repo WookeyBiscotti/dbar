@@ -1,6 +1,8 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"gtk-d": "3.10.0"
+		"dyaml": "0.9.2",
+		"gtk-d": "3.10.0",
+		"tinyendian": "0.2.0"
 	}
 }

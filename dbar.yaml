@@ -1,0 +1,28 @@
+vars:
+
+pollvars:
+
+listenvars:
+
+windows:
+  mainbar:
+    params:
+    layer: top # bg, top, bottom, overlay
+    size: [200, 20]
+    anchors: [1, 1, 1, 0] # left, right, top, bottom
+    margins: [100%, 0%, 0%, 0%] # left, right, top, bottom
+    keyboard_mode: exclusive # none, exclusive, demand
+    keyboard_interactivity: 0
+    auto_exclusive: 1
+    widget:
+      label:
+        text: Hello!
+
+widgets:
+  mainbar:
+    params:
+      arg1:
+      arg2:
+        init: 10
+    label:
+      text: "Hi!"
