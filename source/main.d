@@ -33,16 +33,20 @@ private import glib.Str;
 private import gobject.ObjectG;
 private import gobject.Signals;
 private import gtk.AccelGroup;
+private import gdk.Gdk;
 private import gtk.Application;
 private import gtk.CssProvider;
 private import gtk.StyleContext;
 private import gtk.Bin;
+private import gdk.Screen;
 private import gtk.Widget;
 private import gtk.WindowGroup;
 private import gtk.c.functions;
 public import gtk.c.types;
 public import gtkc.gtktypes;
 private import std.algorithm;
+
+import utils;
 
 import context;
 
@@ -124,8 +128,10 @@ import std;
 
 int main(string[] args) {
 	try {
+		Gdk.setAllowedBackends("wayland");
 
 		auto application = new Application("org.gtkd.demo.helloworld", GApplicationFlags.FLAGS_NONE);
+		// Display
 
 		auto provider = new CssProvider;
 		provider.loadFromPath("/home/alex/.config/waybar/style.css");
@@ -134,6 +140,7 @@ int main(string[] args) {
 		WindowNode window;
 
 		application.addOnActivate(delegate void(GioApplication app) {
+			writeln(getMonitorsPlugNames());
 			auto root = Loader.fromFile("dbar.yaml").load();
 			foreach (pair; root["windows"].mapping) {
 				window = new WindowNode(ctx, pair.key.as!string, pair.value);
@@ -145,7 +152,6 @@ int main(string[] args) {
 		// ctx.addProvider(provider, STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 		return application.run(args);
-
 	} catch (Throwable e) {
 		writeln(e.message);
 	}

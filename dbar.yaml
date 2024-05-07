@@ -10,7 +10,7 @@ windows:
     layer: top # bg, top, bottom, overlay
     size: [200, 20]
     anchors: [1, 1, 1, 0] # left, right, top, bottom
-    margins: [100%, 0%, 0%, 0%] # left, right, top, bottom
+    margins: [10%, 0%, 0%, 0%] # left, right, top, bottom
     keyboard_mode: exclusive # none, exclusive, demand
     keyboard_interactivity: 0
     auto_exclusive: 1

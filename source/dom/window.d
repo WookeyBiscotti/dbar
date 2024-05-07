@@ -5,6 +5,8 @@ import gtk.ApplicationWindow;
 import gtk_layer_shell;
 import gtk.CssProvider;
 import gtk.Container;
+import gdk.Display;
+import gdk.MonitorG;
 
 import dyaml;
 import std.conv;
@@ -38,25 +40,47 @@ public:
     override void onVarsUpdated() {
         auto gtkWindow = cast(GtkWindow*) _gtkWindow.getApplicationWindowStruct();
 
+        auto monitor = _gtkWindow.getDisplay().getMonitor(0);
+        // auto monitor = new MonitorG(gtk_layer_get_monitor(gtkWindow));
+        import std.stdio;
+
+        GdkRectangle geometry;
+        monitor.getWorkarea(geometry);
+        writeln(monitor.getDisplay().getDefaultScreen().getMonitorPlugName(0));
+        // writeln(monitor.getModel());
+        // writeln(monitor.getModel());
+        // writeln(monitor.getDisplay().getName());
+        // writeln(monitor.getDisplay().getDefaultScreen());
+        // writeln(monitor.getDisplay().getDefaultScreen().makeDisplayName());
+
+        // gtk_layer_get_monitor(gtkWindow);
+
+        // gtk_layer_set_namespace(gtkWindow, "dbar");
+
         auto layer = _context.resolve(_layer).layerFromString();
+
         gtk_layer_set_layer(gtkWindow, cast(GtkLayerShellLayer) layer);
 
+        // auto monitor = _gtkWindow.getDisplay().getMonitor(0);
+        // GdkRectangle geometry;
+        // // monitor.getWorkarea(geometry);
+
         foreach (i; 0 .. 2) {
             gtk_layer_set_anchor(gtkWindow, cast(GtkLayerShellEdge) i,
-                _context.resolveInWindowWidth(_anchors[i]).to!int);
+                _context.resolveInWindowWidth(_anchors[i], geometry.width).to!int);
         }
         foreach (i; 2 .. 4) {
             gtk_layer_set_anchor(gtkWindow, cast(GtkLayerShellEdge) i,
-                _context.resolveInWindowHeight(_anchors[i]).to!int);
+                _context.resolveInWindowHeight(_anchors[i], geometry.height).to!int);
         }
 
         foreach (i; 0 .. 2) {
             gtk_layer_set_margin(gtkWindow, cast(GtkLayerShellEdge) i,
-                _context.resolveInWindowWidth(_margins[i]).to!int);
+                _context.resolveInWindowWidth(_margins[i], geometry.width).to!int);
         }
         foreach (i; 2 .. 4) {
             gtk_layer_set_margin(gtkWindow, cast(GtkLayerShellEdge) i,
-                _context.resolveInWindowHeight(_margins[i]).to!int);
+                _context.resolveInWindowHeight(_margins[i], geometry.height).to!int);
         }
 
         gtk_layer_set_keyboard_mode(gtkWindow,
@@ -70,8 +94,9 @@ public:
             gtk_layer_auto_exclusive_zone_enable(gtkWindow);
         }
 
-        _gtkWindow.setSizeRequest(_context.resolveInWindowWidth(_size[0])
-                .to!int, _context.resolveInWindowHeight(_size[1]).to!int);
+        _gtkWindow.setSizeRequest(_context.resolveInWindowWidth(_size[0],
+                geometry.width).to!int, _context.resolveInWindowHeight(_size[1],
+                geometry.height).to!int);
     }
 
     void setStyleProvider(CssProvider provider, int priority) {
@@ -84,9 +109,32 @@ private:
         auto gtkWindow = cast(GtkWindow*) _gtkWindow.getApplicationWindowStruct();
 
         gtk_layer_init_for_window(gtkWindow);
+        gtk_layer_set_layer(gtkWindow, cast(GtkLayerShellLayer) 0);
+        // import core.thread;
+        // Thread.sleep( dur!("seconds")( 1 ) );
+        // auto monitor = _gtkWindow.getDisplay().getMonitor(0);
+        // import std.stdio;
+        // GdkRectangle geometry;
+        // monitor.getWorkarea(geometry);
+        // writeln(monitor.getModel());
+        // writeln(geometry.height);
+
+        // _gtkWindow.showAll();
+
+        // writeln(monitor.getModel());
+        // auto monitor = _gtkWindow.getDisplay().getMonitor(0);
+
+        // auto display = app.getActiveWindow().getDisplay();
+        // auto m = new MonitorG(gtk_layer_get_monitor(app.getActiveWindow().getWindowStruct()));
+
+        // gtk_layer_set_monitor(gtkWindow, gtk_layer_get_monitor(gtkWindow));
+
+        // Thread.sleep( dur!("seconds")( 5 ) );
     }
 
     void parse(ref Node node) {
+        _monitor = node["monitor"].as!string;
+
         _layer = node["layer"].as!string;
 
         auto size = node["size"];
@@ -132,6 +180,7 @@ private:
     Context _context;
     ApplicationWindow _gtkWindow;
     string _layer;
+    string _monitor;
     string[2] _size;
     string[Edge.sizeof] _anchors;
     string[Edge.sizeof] _margins;
