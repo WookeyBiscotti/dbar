@@ -1,22 +1,56 @@
 vars:
+  auto_exclusive:
+    init: 1
+  margins:
+    init:
+      value: "30%"
+      comment: test comment
 
 pollvars:
+  # time:
+  #   # command: "date +'{value: \"%H\"}"
+  #   command: vnstat -l
+  #   interval: 1s
 
 listenvars:
+  time:
+    command: vnstat -l --json
 
 windows:
   mainbar:
     params:
+    monitor: 0
     layer: top # bg, top, bottom, overlay
     size: [200, 20]
     anchors: [1, 1, 1, 0] # left, right, top, bottom
-    margins: [10%, 0%, 0%, 0%] # left, right, top, bottom
+    margins: ["${margins.value}", "${margins.value}", 0%, 0%] # left, right, top, bottom
     keyboard_mode: exclusive # none, exclusive, demand
     keyboard_interactivity: 0
-    auto_exclusive: 1
+    auto_exclusive: ${auto_exclusive}
     widget:
-      label:
-        text: Hello!
+      box:
+        name: test
+        orientation: h
+        halign: fill
+        valign: fill
+        padding: 0
+        childs:
+          - label:
+              text: WWWW
+              box_packing: start
+              halign: fill
+              valign: fill
+          - label:
+              # text: ${time.value}
+              text: ${time.rx.ratestring}
+              box_packing: center
+              halign: fill
+              valign: fill
+          - label:
+              text: WWWW
+              box_packing: end
+              halign: fill
+              valign: fill
 
 widgets:
   mainbar:

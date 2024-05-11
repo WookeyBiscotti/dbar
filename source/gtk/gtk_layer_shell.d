@@ -1,4 +1,4 @@
-module gtk_layer_shell;
+module gtk.gtk_layer_shell;
 
 import gtk.Window;
 

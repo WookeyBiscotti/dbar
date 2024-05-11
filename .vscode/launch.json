@@ -6,12 +6,29 @@
     "configurations": [
         {
             "name": "Debug",
-            "type": "gdb",
+            "type": "lldb",
             "request": "launch",
-            "target": "${workspaceRoot}/dbar",
+            "program": "${workspaceRoot}/dbar",
             "cwd": "${workspaceRoot}",
-            "valuesFormatting": "parseText",
-            "env": {"GDK_BACKEND":"wayland"}
+            "env": {
+                "GDK_BACKEND": "wayland"
+            }
+        },
+        {
+            "name": "Debug test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/dbar-test-library",
+            "cwd": "${workspaceRoot}",
+            "env": {
+                "GDK_BACKEND": "wayland"
+            }
+        },
+        {
+            "name": "code-d Debug",
+            "type": "code-d",
+            "program": "${command:dubTarget}",
+            "request": "launch",
         }
     ]
 }

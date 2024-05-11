@@ -2,9 +2,10 @@ module widgets.label;
 
 import gtk.Widget;
 import gtk.Label;
+import gtk.Box;
 
-import dom.widget;
-import parser.utils;
+import widgets.widget;
+import utils;
 import context;
 
 import std.uuid;
@@ -14,28 +15,35 @@ import dyaml;
 class LabelNode : WidgetNode {
 public:
     this(Context ctx, WidgetNode parent, ref Node node) {
-        _context = ctx;
+        super(ctx);
         _parent = parent;
+        WidgetNode.parse(node);
         parse(node);
         constructGtkWidget();
+        LabelNode.onVarsUpdated();
     }
 
-    void constructGtkWidget() {
+    override Widget asWidget() {
+        return _label;
+    }
+
+    final void constructGtkWidget() {
         _label = new Label(_context.resolve(_text));
-        _parent.asContainer().add(_label);
+
+        onVarsUpdated();
     }
 
     override void onVarsUpdated() {
+        super.onVarsUpdated();
+
         _label.setText(_context.resolve(_text));
     }
 
 private:
     void parse(ref Node node) {
-        _name = node.getOrDefault("name", randomUUID().toString());
-        _text = node["text"].as!string;
+        _text = grabDeps(node["text"].as!string);
     }
-    // private:
-    Context _context;
+
     Label _label;
     string _text;
 }

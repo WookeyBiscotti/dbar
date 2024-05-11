@@ -1,35 +1,42 @@
-module dom.window;
+module widgets.window;
 
 import gtk.Application;
 import gtk.ApplicationWindow;
-import gtk_layer_shell;
 import gtk.CssProvider;
 import gtk.Container;
 import gdk.Display;
+import gtk.Widget;
 import gdk.MonitorG;
+import gtk.gtk_layer_shell;
 
 import dyaml;
 import std.conv;
 
 import context;
-import parser.utils;
-import dom.widget;
+import utils;
+import widgets.widget;
 import widgets.label;
+import widgets.parser;
+import utils;
 
 class WindowNode : WidgetNode {
 public:
     this(Context ctx, string name, ref Node node) {
-        _context = ctx;
+        super(ctx);
         _name = name;
         parse(node);
+        WindowNode.onVarsUpdated();
     }
 
     override Container asContainer() {
         return _gtkWindow;
     }
 
+    override Widget asWidget() {
+        return _gtkWindow;
+    }
+
     void show() {
-        onVarsUpdated();
         _gtkWindow.showAll();
     }
 
@@ -38,32 +45,18 @@ public:
     }
 
     override void onVarsUpdated() {
+        super.onVarsUpdated();
+
         auto gtkWindow = cast(GtkWindow*) _gtkWindow.getApplicationWindowStruct();
 
-        auto monitor = _gtkWindow.getDisplay().getMonitor(0);
-        // auto monitor = new MonitorG(gtk_layer_get_monitor(gtkWindow));
-        import std.stdio;
-
-        GdkRectangle geometry;
-        monitor.getWorkarea(geometry);
-        writeln(monitor.getDisplay().getDefaultScreen().getMonitorPlugName(0));
-        // writeln(monitor.getModel());
-        // writeln(monitor.getModel());
-        // writeln(monitor.getDisplay().getName());
-        // writeln(monitor.getDisplay().getDefaultScreen());
-        // writeln(monitor.getDisplay().getDefaultScreen().makeDisplayName());
-
-        // gtk_layer_get_monitor(gtkWindow);
-
-        // gtk_layer_set_namespace(gtkWindow, "dbar");
-
         auto layer = _context.resolve(_layer).layerFromString();
-
         gtk_layer_set_layer(gtkWindow, cast(GtkLayerShellLayer) layer);
 
-        // auto monitor = _gtkWindow.getDisplay().getMonitor(0);
-        // GdkRectangle geometry;
-        // // monitor.getWorkarea(geometry);
+        auto monitorIdx = _context.resolve(_monitor).to!int;
+        auto monitor = getMonitorFromIdx(monitorIdx);
+        gtk_layer_set_monitor(gtkWindow, monitor.getMonitorGStruct());
+        GdkRectangle geometry;
+        monitor.getWorkarea(geometry);
 
         foreach (i; 0 .. 2) {
             gtk_layer_set_anchor(gtkWindow, cast(GtkLayerShellEdge) i,
@@ -90,7 +83,7 @@ public:
         gtk_layer_set_keyboard_interactivity(gtkWindow,
             _context.resolve(_keyboardInteractivity).to!int);
 
-        if (_context.resolve(_autoExclusiveMode)) {
+        if (_context.resolve(_autoExclusiveMode).to!int) {
             gtk_layer_auto_exclusive_zone_enable(gtkWindow);
         }
 
@@ -110,30 +103,10 @@ private:
 
         gtk_layer_init_for_window(gtkWindow);
         gtk_layer_set_layer(gtkWindow, cast(GtkLayerShellLayer) 0);
-        // import core.thread;
-        // Thread.sleep( dur!("seconds")( 1 ) );
-        // auto monitor = _gtkWindow.getDisplay().getMonitor(0);
-        // import std.stdio;
-        // GdkRectangle geometry;
-        // monitor.getWorkarea(geometry);
-        // writeln(monitor.getModel());
-        // writeln(geometry.height);
-
-        // _gtkWindow.showAll();
-
-        // writeln(monitor.getModel());
-        // auto monitor = _gtkWindow.getDisplay().getMonitor(0);
-
-        // auto display = app.getActiveWindow().getDisplay();
-        // auto m = new MonitorG(gtk_layer_get_monitor(app.getActiveWindow().getWindowStruct()));
-
-        // gtk_layer_set_monitor(gtkWindow, gtk_layer_get_monitor(gtkWindow));
-
-        // Thread.sleep( dur!("seconds")( 5 ) );
     }
 
     void parse(ref Node node) {
-        _monitor = node["monitor"].as!string;
+        _monitor = node.getOrDefault("monitor", getMonitorsPlugNames()[0]);
 
         _layer = node["layer"].as!string;
 
@@ -163,22 +136,15 @@ private:
         auto widget = node["widget"];
         if (widget.type() == NodeType.mapping) {
             foreach (pair; widget.mapping) {
-                if (pair.key.as!string == "label") {
-                    auto label = new LabelNode(_context, this, pair.value);
-                    _childs ~= label;
-                }
+                auto w = parseWidget(_context, this, pair.key.as!string, pair.value);
+                _gtkWindow.add(w.asWidget());
+                _childs ~= w;
             }
-
         }
-        // if (widget.type() == NodeType.string) {
-        //     _widget = widget.as!string;
-        // } else {
-
-        // }
     }
-    // private:
-    Context _context;
+
     ApplicationWindow _gtkWindow;
+
     string _layer;
     string _monitor;
     string[2] _size;
@@ -187,5 +153,4 @@ private:
     string _keyboardMode;
     string _keyboardInteractivity;
     string _autoExclusiveMode;
-    string _widget;
 }
