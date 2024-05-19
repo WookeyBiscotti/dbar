@@ -37,8 +37,6 @@ class ListenVariable : Variable {
                 } catch (Exception e) {
                     writeln(e);
                 }
-
-                writeln("WTF");
             }
         };
 

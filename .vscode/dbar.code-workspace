@@ -4,7 +4,10 @@
 			"path": "../"
 		},
 		{
-			"path": "../../../../.dub/packages/gtk-d-3.10.0"
+			"path": "../../../.dub/packages/gtk-d-3.10.0"
+		},
+		{
+			"path": "../../../dotfiles"
 		}
 	],
 	"settings": {}

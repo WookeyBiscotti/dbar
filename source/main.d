@@ -9,8 +9,61 @@ import context;
 
 import std.stdio;
 import std.process;
+import std.getopt;
+
+import dwd;
+import dwd_client;
+
+import ipc.commands;
 
 int main(string[] args) {
+	string appPath = args[0];
+
+	string configPath;
+	bool debugLog = false;
+	auto opts = getopt(args, //
+		"config|c", &configPath, //
+		"debug|d", &debugLog, //
+		);
+	args = args[1 .. $];
+
+	if (!args || !args.length || opts.helpWanted) {
+		defaultGetoptPrinter("Help", opts.options);
+
+		return 0;
+	}
+
+	if (args[0] == "daemon") {
+		import std.concurrency;
+		import core.thread;
+
+		auto dg = () shared{ auto d = new DWD([]); d.ipcThread(); };
+		spawn(dg);
+		return 0;
+	}
+
+	auto client = new DWDClient(DWDClientConfig(debugLog));
+	auto resp = client.sendCommand(makeRequest(args[0], args[1 .. $]));
+
+	if (resp) {
+		writeln(resp.msg());
+	} else {
+		writeln("Can't connect to daemon");
+	}
+
+	return 0;
+
+	// if (args.length > 1) {
+	// 	auto c = new DWDClient;
+	// 	c.sendStrCommand(args[1]);
+	// 	return 0;
+	// } else {
+	// 	auto d = new DWD(args);
+	// 	d.ipcThread();
+	// }
+
+	// return;
+
 	environment["GDK_BACKEND"] = "wayland";
 
 	// try {

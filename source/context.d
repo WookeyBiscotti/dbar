@@ -9,6 +9,7 @@ import core.thread;
 import gtk.Application;
 import gtk.gtk_layer_shell;
 import gtk.CssProvider;
+import gtk.StyleContext;
 
 import gdk.Display;
 import gdk.Screen;
@@ -21,6 +22,8 @@ import widgets.window;
 import variables.variable;
 import variables.pollvar;
 import variables.listenvar;
+
+import core.interpolation;
 
 import utils;
 
@@ -52,6 +55,8 @@ final class Context {
 
         auto provider = new CssProvider;
         provider.loadFromPath("/home/alex/.config/waybar/style.css");
+        StyleContext.addProviderForScreen(Screen.getDefault(), provider,
+            STYLE_PROVIDER_PRIORITY_APPLICATION);
 
         auto root = Loader.fromFile("dbar.yaml").load();
 
@@ -79,9 +84,12 @@ final class Context {
         foreach (pair; root["windows"].mapping) {
             auto window = new WindowNode(this, pair.key.as!string, pair.value);
             _windows[pair.key.as!string] = window;
-            window.setStyleProvider(provider, STYLE_PROVIDER_PRIORITY_APPLICATION);
             window.show();
         }
+        // window.setStyleProvider(provider, STYLE_PROVIDER_PRIORITY_APPLICATION);
+        // Screen.getDefault().
+        StyleContext.addProviderForScreen(Screen.getDefault(), provider,
+            STYLE_PROVIDER_PRIORITY_APPLICATION);
 
         foreach (v; _variables) {
             v.start();
@@ -165,10 +173,14 @@ private:
             }
             while (left.length);
 
-            return _variables[varName].value(path);
-        } else {
-            return "";
+            if (auto variable = varName in _variables) {
+                return _variables[varName].value(path);
+            } else {
+                return "Not found";
+            }
         }
+
+        return "";
     }
 
     string extractVarName(string str) {
@@ -229,12 +241,14 @@ private:
     }
 
     VarInsert[] exctractVarInsert(string value) {
+        import std.conv;
+
         VarInsert[] inserts;
 
         ulong variableStart = 0;
         char stringStart = 0;
         char prevChar = 0;
-        foreach (i, c; value) {
+        foreach (idx, c; value) {
             if (c == '`' || c == '\'' || c == '"') {
                 if (prevChar != '\\') {
                     if (!!stringStart) {
@@ -249,20 +263,19 @@ private:
                 if (prevChar == '$') {
                     if (!stringStart) {
                         if (!!variableStart) {
-                            throw new Exception(format("Error in variable: `%s` in pos %s",
-                                    value, i));
+                            throw new Exception(i"Error in variable: $(value) in pos $(idx)".text);
                         }
-                        variableStart = i;
+                        variableStart = idx;
                     }
                 }
             } else if (c == '}') {
                 if (!stringStart) {
                     if (!variableStart) {
-                        throw new Exception(format("Error in variable: `%s` in pos %s", value, i));
+                        throw new Exception(i"Error in variable: $(value) in pos $(idx)".text);
                     }
-                    inserts ~= VarInsert(variableStart - 1, i + 1, value[variableStart + 1 .. i]);
+                    inserts ~= VarInsert(variableStart - 1, idx + 1, value[variableStart + 1 .. idx]);
 
-                    variableStart = i;
+                    variableStart = idx;
                 }
             }
             prevChar = c;

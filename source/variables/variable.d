@@ -24,6 +24,9 @@ public:
         return _name;
     }
 
+    void start() {
+    }
+
     string value() {
         synchronized (this) {
             if (_value.type() == NodeType.sequence || _value.type() == NodeType.mapping) {
@@ -35,12 +38,7 @@ public:
         }
     }
 
-    void start() {
-    }
-
     string value(Path path) {
-        import std.stdio;
-
         try {
             synchronized (this) {
                 auto value = _value;

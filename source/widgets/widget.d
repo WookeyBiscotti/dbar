@@ -3,6 +3,8 @@ module widgets.widget;
 import std.uuid;
 import gtk.Container;
 import gtk.Widget;
+import gtk.StyleContext;
+
 import dyaml;
 import utils;
 import context;
@@ -42,6 +44,7 @@ public:
         _name = grabDeps(node.getOrDefault("name", randomUUID().toString()));
         _halign = grabDeps(node.getOrDefault("halign", "fill"));
         _valign = grabDeps(node.getOrDefault("valign", "fill"));
+        _class = grabDeps(node.getOrDefault("class", ""));
     }
 
     void onVarsUpdated() {
@@ -49,8 +52,14 @@ public:
 
         auto ha = getAlign(_context.resolve(_halign));
         w.setHalign(ha);
+
         auto va = getAlign(_context.resolve(_valign));
         w.setValign(va);
+
+        auto class_ = _context.resolve(_class);
+        if (class_) {
+            w.getStyleContext().addClass(class_);
+        }
     }
 
 protected:
@@ -58,6 +67,7 @@ protected:
     string _name;
     string _halign;
     string _valign;
+    string _class;
 
     WidgetNode _parent;
     WidgetNode[] _childs;

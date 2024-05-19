@@ -8,3 +8,4 @@ dependency "dyaml" version="~>0.9.2"
 
 // lflags "$PACKAGE_DIR/3rdparty/gtk-layer-shell/build/src/libgtk-layer-shell.so.0"
 lflags "/usr/lib/libgtk-layer-shell.so"
+dflags "-mixin=mixins_instantation.d"

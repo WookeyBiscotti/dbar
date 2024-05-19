@@ -24,6 +24,7 @@ public:
     this(Context ctx, string name, ref Node node) {
         super(ctx);
         _name = name;
+        WidgetNode.parse(node);
         parse(node);
         WindowNode.onVarsUpdated();
     }

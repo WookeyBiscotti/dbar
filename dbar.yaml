@@ -1,19 +1,12 @@
 vars:
-  auto_exclusive:
-    init: 1
-  margins:
-    init:
-      value: "30%"
-      comment: test comment
 
 pollvars:
-  # time:
-  #   # command: "date +'{value: \"%H\"}"
-  #   command: vnstat -l
-  #   interval: 1s
+  datetime:
+    command: date +'"%H:%M:%S %d-%m-%Y"'
+    interval: 1s
 
 listenvars:
-  time:
+  net_speed:
     command: vnstat -l --json
 
 windows:
@@ -22,35 +15,25 @@ windows:
     monitor: 0
     layer: top # bg, top, bottom, overlay
     size: [200, 20]
+    class: wtf
     anchors: [1, 1, 1, 0] # left, right, top, bottom
-    margins: ["${margins.value}", "${margins.value}", 0%, 0%] # left, right, top, bottom
+    margins: [0, 0, 0%, 0%] # left, right, top, bottom
     keyboard_mode: exclusive # none, exclusive, demand
     keyboard_interactivity: 0
-    auto_exclusive: ${auto_exclusive}
+    auto_exclusive: 1
     widget:
       box:
-        name: test
-        orientation: h
-        halign: fill
-        valign: fill
-        padding: 0
         childs:
           - label:
-              text: WWWW
+              text: ${net_speed.rx.ratestring}
               box_packing: start
-              halign: fill
-              valign: fill
           - label:
-              # text: ${time.value}
-              text: ${time.rx.ratestring}
+              text: ${datetime}
               box_packing: center
-              halign: fill
-              valign: fill
-          - label:
+          - button:
               text: WWWW
               box_packing: end
-              halign: fill
-              valign: fill
+              onclick: killall -9 dbar
 
 widgets:
   mainbar:

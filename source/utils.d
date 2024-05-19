@@ -7,10 +7,14 @@ import gtk.c.types;
 
 import core.time;
 import std.conv;
+import std.process;
 import std.array;
 import std.algorithm;
 import std.string;
+import std.concurrency;
+
 import dyaml;
+import core.interpolation;
 
 string[] getMonitorsPlugNames() {
     auto screen = Screen.getDefault();
@@ -131,4 +135,13 @@ string dump(Node node) {
     } else {
         return "null";
     }
+}
+
+void executeCmd(const string command, Duration timeout) {
+    auto dg = () shared{ executeShell(command); };
+    spawn(dg);
+}
+
+bool executableExist(string cmd) {
+    return !!executeShell("command -v " ~ cmd).output;
 }

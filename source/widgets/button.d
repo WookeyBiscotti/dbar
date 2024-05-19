@@ -1,19 +1,18 @@
-module widgets.label;
+module widgets.button;
 
 import gtk.Widget;
-import gtk.Label;
-import gtk.Box;
-
+import gtk.Button;
 
 import widgets.widget;
 import utils;
 import context;
 
 import std.uuid;
+import core.time;
 
 import dyaml;
 
-class LabelNode : WidgetNode {
+class ButtonNode : WidgetNode {
 public:
     this(Context ctx, WidgetNode parent, ref Node node) {
         super(ctx);
@@ -21,15 +20,15 @@ public:
         WidgetNode.parse(node);
         parse(node);
         constructGtkWidget();
-        LabelNode.onVarsUpdated();
+        ButtonNode.onVarsUpdated();
     }
 
     override Widget asWidget() {
-        return _label;
+        return _button;
     }
 
     final void constructGtkWidget() {
-        _label = new Label(_context.resolve(_text));
+        _button = new Button(_context.resolve(_text));
 
         onVarsUpdated();
     }
@@ -37,14 +36,19 @@ public:
     override void onVarsUpdated() {
         super.onVarsUpdated();
 
-        _label.setText(_context.resolve(_text));
+        _button.setLabel(_context.resolve(_text));
+        _button.addOnClicked((Button) {
+            executeCmd(_context.resolve(_onClick), dur!"seconds"(1));
+        });
     }
 
 private:
     void parse(ref Node node) {
         _text = grabDeps(node["text"].as!string);
+        _onClick = grabDeps(node.getOrDefault("onclick", ""));
     }
 
-    Label _label;
+    Button _button;
     string _text;
+    string _onClick;
 }
