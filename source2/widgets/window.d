@@ -7,7 +7,7 @@ import gtk.Container;
 import gdk.Display;
 import gtk.Widget;
 import gdk.MonitorG;
-import gtk.gtk_layer_shell;
+import bindings.gtk_layer_shell;
 
 import dyaml;
 import std.conv;

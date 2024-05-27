@@ -5,14 +5,14 @@ import gtk.Application;
 import gdk.Threads;
 import gdk.Gdk;
 
-import context;
+// import context;
 
 import std.stdio;
 import std.process;
 import std.getopt;
 
-import dwd;
-import dwd_client;
+import dwd.dwd;
+import dwd.dwd_client;
 
 import ipc.commands;
 
@@ -34,16 +34,20 @@ int main(string[] args) {
 	}
 
 	if (args[0] == "daemon") {
-		import std.concurrency;
-		import core.thread;
+		// import std.concurrency;
+		// import core.thread;
 
-		auto dg = () shared{ auto d = new DWD([]); d.ipcThread(); };
-		spawn(dg);
+		// auto dg = () shared{ auto d = new DWD([]); d.ipcThread(); };
+		// spawn(dg);
+
+		auto d = new DWD([]);
+		d.run();
+
 		return 0;
 	}
 
 	auto client = new DWDClient(DWDClientConfig(debugLog));
-	auto resp = client.sendCommand(makeRequest(args[0], args[1 .. $]));
+	auto resp = client.sendCommand(args[0], makeRequest(args[0], args[1 .. $]));
 
 	if (resp) {
 		writeln(resp.msg());
@@ -64,18 +68,18 @@ int main(string[] args) {
 
 	// return;
 
-	environment["GDK_BACKEND"] = "wayland";
+	// environment["GDK_BACKEND"] = "wayland";
 
 	// try {
-	Gdk.setAllowedBackends("wayland");
+	// Gdk.setAllowedBackends("wayland");
 
-	auto application = new Application("org.gtkd.demo.helloworld", GApplicationFlags.FLAGS_NONE);
-	Context ctx;
-	application.addOnActivate(delegate void(GioApplication) {
-		ctx = new Context(application, "dbar.yaml", "/home/alex/.config/waybar/style.css");
-	});
+	// auto application = new Application("org.gtkd.demo.helloworld", GApplicationFlags.FLAGS_NONE);
+	// Context ctx;
+	// application.addOnActivate(delegate void(GioApplication) {
+	// 	ctx = new Context(application, "dbar.yaml", "/home/alex/.config/waybar/style.css");
+	// });
 
-	return application.run(args);
+	// return application.run(args);
 	// } catch (Exception e) {
 	// writeln(e.message);
 	// return -1;

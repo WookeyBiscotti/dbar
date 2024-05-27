@@ -6,49 +6,17 @@ import std.conv;
 
 import core.interpolation;
 
-import context;
+import dwd.dwd;
 
 struct BaseCmd {
-    class Package {
-        final JSONValue create() const {
-            auto js = JSONValue.emptyObject;
-            js.object["cmd"] = name();
-            createImpl(js);
+    class Request {
+        abstract void dump(ref JSONValue js) const;
 
-            return js;
-        }
-
-        final bool parse(in JSONValue js) nothrow {
-            try {
-                if (js["cmd"].str != name()) {
-                    return false;
-                }
-                return parseImpl(js);
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        void createImpl(ref JSONValue js) const {
-        }
-
-        bool parseImpl(in JSONValue js) {
-            return true;
-        }
-
-        abstract string name() const nothrow;
+        abstract Response process(DWD dwd);
     }
 
-    class Request : Package {
-        abstract Response makeResponse();
-
-        abstract void process(Context ctx);
-    }
-
-    class Response : Package {
-        final override void createImpl(ref JSONValue js) const {
-            js.object["msg"] = msg();
-        }
+    class Response {
+        abstract void dump(ref JSONValue js) const;
 
         abstract string msg() const nothrow;
     }
@@ -59,33 +27,32 @@ struct PingCmd {
         this(string[]) {
         }
 
-        override string name() const nothrow {
-            return PingCmd.name();
+        this(in JSONValue) {
         }
 
-        override BaseCmd.Response makeResponse() {
-            return new PingCmd.Resp();
+        override void dump(ref JSONValue js) const {
         }
 
-        override void process(Context) {
-            // do nothing
+        override BaseCmd.Response process(DWD dwd) {
+            return new PingCmd.Resp(dwd.ping());
         }
     }
 
     class Resp : BaseCmd.Response {
-        this() {
-        }
-
         this(string msg) {
             _msg = msg;
         }
 
-        override string msg() const nothrow {
-            return _msg;
+        this(in JSONValue js) {
+            _msg = js["msg"].str;
         }
 
-        override string name() const nothrow {
-            return PingCmd.name();
+        override void dump(ref JSONValue js) const {
+            js["msg"] = _msg;
+        }
+
+        override string msg() const nothrow {
+            return _msg;
         }
 
         private string _msg;
@@ -96,7 +63,48 @@ struct PingCmd {
     }
 }
 
-BaseCmd.Request makeRequest(string name, string[] args) {
+struct KillCmd {
+    class Req : BaseCmd.Request {
+        this(string[]) {
+        }
+
+        this(in JSONValue) {
+        }
+
+        override void dump(ref JSONValue js) const {
+        }
+
+        override BaseCmd.Response process(DWD dwd) {
+            return new KillCmd.Resp(dwd.kill());
+        }
+    }
+
+    class Resp : BaseCmd.Response {
+        this(string msg) {
+            _msg = msg;
+        }
+
+        this(in JSONValue js) {
+            _msg = js["msg"].str;
+        }
+
+        override void dump(ref JSONValue js) const {
+            js["msg"] = _msg;
+        }
+
+        override string msg() const nothrow {
+            return _msg;
+        }
+
+        private string _msg;
+    }
+
+    static string name() nothrow {
+        return "kill";
+    }
+}
+
+BaseCmd.Request makeRequest(Args...)(string name, Args args) {
     mixin(makeMixinReqFactory());
 
     return null;
@@ -112,6 +120,27 @@ private string makeMixinReqFactory() {
             result ~= "else ";
         }
         result ~= i"if($(c).name() == name) { return new $(c).Req(args);}".text;
+    }
+
+    return result;
+}
+
+BaseCmd.Response makeResponse(Args...)(string name, Args args) {
+    mixin(makeMixinRespFactory());
+
+    return null;
+}
+
+private string makeMixinRespFactory() {
+    string result;
+
+    enum auto cmds = [__traits(allMembers, ipc.commands)].filter!(s => s != "BaseCmd"
+                && s.endsWith("Cmd"));
+    foreach (c; cmds) {
+        if (result.length) {
+            result ~= "else ";
+        }
+        result ~= i"if($(c).name() == name) { return new $(c).Resp(args);}".text;
     }
 
     return result;

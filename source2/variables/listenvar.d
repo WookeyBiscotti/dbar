@@ -2,7 +2,7 @@ module variables.listenvar;
 
 import utils;
 import context;
-import variables.variable;
+import variables.simple_variable;
 
 import dyaml;
 
@@ -13,7 +13,7 @@ import std.array;
 import std.concurrency;
 import core.thread;
 
-class ListenVariable : Variable {
+class ListenVariable : SimpleVariable {
     this(Context ctx, string name, ref Node node) {
         super(ctx, name, node);
         _command = getOrDefault(node, "command", "");
@@ -28,9 +28,9 @@ class ListenVariable : Variable {
                     auto ps = pipeShell(_command);
                     foreach (line; ps.stdout.byLine()) {
                         try {
-                            setVariable(Loader.fromString(line).load());
+                            setValue(Loader.fromString(line).load());
                         } catch (Exception e) {
-                            setVariable(Node(line));
+                            setValue(Node(line));
                         }
                         _ctx.updateVariable(name);
                     }

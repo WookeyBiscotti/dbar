@@ -2,7 +2,7 @@ module variables.pollvar;
 
 import utils;
 import context;
-import variables.variable;
+import variables.simple_variable;
 
 import dyaml;
 
@@ -13,7 +13,7 @@ import std.array;
 import std.concurrency;
 import core.thread;
 
-class PollVariable : Variable {
+class PollVariable : SimpleVariable {
     this(Context ctx, string name, ref Node node) {
         super(ctx, name, node);
         _command = getOrDefault(node, "command", "");

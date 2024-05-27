@@ -1,4 +1,4 @@
-module utils;
+module source2.utils;
 
 import gdk.Screen;
 import gdk.MonitorG;
@@ -42,11 +42,6 @@ MonitorG getMonitorFromPlugName(string name) {
     return null;
 }
 
-MonitorG getMonitorFromIdx(int idx) {
-    auto screen = Screen.getDefault();
-    return screen.getDisplay().getMonitor(idx);
-}
-
 T getOrDefault(T)(ref Node node, string key, lazy T value) {
     return node.containsKey(key) ? node[key].as!T : value;
 }
@@ -80,10 +75,12 @@ GtkAlign getAlign(string a) {
 }
 
 enum Edge {
-    LEFT,
-    RIGHT,
-    TOP,
-    BOTTOM,
+    LEFT = 0,
+    RIGHT = 1,
+    TOP = 2,
+    BOTTOM = 3,
+
+    COUNT = 4,
 }
 
 enum KeyboardMode {

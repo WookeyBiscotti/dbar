@@ -12,7 +12,10 @@
             "cwd": "${workspaceRoot}",
             "env": {
                 "GDK_BACKEND": "wayland"
-            }
+            },
+            "args": [
+                "daemon"
+            ]
         },
         {
             "name": "Debug test",

@@ -1,16 +1,16 @@
-module variables.variable;
+module variables.simple_variable;
 
-import dyaml;
 import context;
 import utils;
+
+public import variables.variable;
+
+import dyaml;
 
 import std.sumtype;
 import std.array;
 
-alias PathElement = SumType!(ulong, string);
-alias Path = PathElement[];
-
-class Variable {
+class SimpleVariable : Variable {
 public:
     this(Context contex, string name, ref Node node) {
         _ctx = contex;
@@ -20,14 +20,14 @@ public:
         }
     }
 
-    final string name() const {
+    override string name() const shared {
         return _name;
     }
 
-    void start() {
+    override void start() {
     }
 
-    string value() {
+    override string getValue() shared {
         synchronized (this) {
             if (_value.type() == NodeType.sequence || _value.type() == NodeType.mapping) {
                 return dump(_value);
@@ -38,7 +38,7 @@ public:
         }
     }
 
-    string value(Path path) {
+    override string getValue(Path path) shared {
         try {
             synchronized (this) {
                 auto value = _value;
@@ -56,15 +56,19 @@ public:
         return "null";
     }
 
-    void setVariable(Node value) {
+    override void setValue(Node value) shared {
         synchronized (this) {
             _value = value;
         }
     }
 
-private:
-    Node _value;
+    string[] dependsOn() const shared {
+
+    }
+
 protected:
     Context _ctx;
-    string _name;
+private:
+    Node _value;
+    immutable string _name;
 }

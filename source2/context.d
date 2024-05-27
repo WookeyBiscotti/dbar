@@ -1,4 +1,4 @@
-module context;
+module source2.context;
 
 import std.string;
 import std.array;
@@ -7,7 +7,7 @@ import std.regex;
 import core.thread;
 
 import gtk.Application;
-import gtk.gtk_layer_shell;
+import bindings.gtk_layer_shell;
 import gtk.CssProvider;
 import gtk.StyleContext;
 
@@ -19,7 +19,7 @@ import gdk.Threads;
 import widgets.widget;
 import widgets.window;
 
-import variables.variable;
+import variables.simple_variable;
 import variables.pollvar;
 import variables.listenvar;
 
@@ -43,7 +43,7 @@ extern (C) nothrow static int threadIdleProcess(void* ctxPtr) {
                 w.onVarsUpdated();
             }
         }
-    } catch (Throwable t) {
+    } catch (Exception) {
     }
     return 0;
 }
@@ -62,7 +62,7 @@ final class Context {
 
         if (root.containsKey("vars") && root["vars"].type() == NodeType.mapping) {
             foreach (pair; root["vars"].mapping) {
-                auto var = new Variable(this, pair.key.as!string, pair.value);
+                auto var = new SimpleVariable(this, pair.key.as!string, pair.value);
                 _variables[pair.key.as!string] = var;
             }
         }
@@ -174,7 +174,7 @@ private:
             while (left.length);
 
             if (auto variable = varName in _variables) {
-                return _variables[varName].value(path);
+                return _variables[varName].getValue(path);
             } else {
                 return "Not found";
             }

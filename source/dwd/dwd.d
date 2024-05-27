@@ -1,4 +1,4 @@
-module dwd;
+module dwd.dwd;
 
 import std.path;
 import std.getopt;
@@ -10,7 +10,6 @@ import std.json;
 import std.algorithm;
 
 import core.time;
-import core.atomic;
 import core.interpolation;
 
 import ipc.utils;
@@ -39,6 +38,23 @@ public:
         //     );
     }
 
+    void run() {
+        _isRunning = true;
+        ipcThread();
+    }
+
+    string ping() const {
+        return "Pong";
+    }
+
+    string kill() {
+        _isRunning = false;
+
+        return "Daemon is killed";
+    }
+
+private:
+
     void ipcThread() {
         auto listener = new Socket(AddressFamily.UNIX, SocketType.STREAM);
         scope (exit)
@@ -50,7 +66,7 @@ public:
 
         auto readSet = new SocketSet();
         Socket[] connectedClients;
-        while (atomicLoad(_isRunning)) {
+        while (_isRunning) {
             readSet.reset();
             readSet.add(listener);
 
@@ -94,16 +110,19 @@ public:
     }
 
     string processIpcStr(string cmd) {
-        // enum auto cmds = filterOnlyCmdStructs([
-        //         __traits(allMembers, ipc.commands)
-        //     ]);
+        try {
+            auto js = parseJSON(cmd);
+            auto req = makeRequest(js["cmd"].str, js);
+            JSONValue jsResp = ["cmd": js["cmd"].str];
+            req.process(this).dump(jsResp);
 
-        // writeln(cmds);
+            return jsResp.toString();
+        } catch (Exception e) {
+            writeln(e);
+        }
 
-        return cmd;
+        return "";
     }
-
-private:
 
     string processIpc(Cmd)(string raw) {
         // try
